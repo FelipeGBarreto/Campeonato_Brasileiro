@@ -9,7 +9,7 @@ warnings.filterwarnings('ignore')
 
 # ## Bases de Dados
 
-path = "/Users/felipebarreto/Documents/Projeto - Campeonato Brasileiro/"
+path = "/Users/felipebarreto/Documents/Projeto - Campeonato Brasileiro/Dados/"
 
 df = pd.read_csv(path + "campeonato-brasileiro-estatisticas-full.csv", sep=";")
 times = pd.read_csv(path + "campeonato-brasileiro-full.csv", sep=";")
