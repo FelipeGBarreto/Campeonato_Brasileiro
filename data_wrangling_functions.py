@@ -1,4 +1,3 @@
-#Atualizado até 18/12/2021
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -6,16 +5,12 @@ import seaborn as sns
 import warnings
 warnings.filterwarnings('ignore')
 
-
-# ## Bases de Dados
-
 path = "/Users/felipebarreto/Documents/Projeto - Campeonato Brasileiro/Dados/"
 
 df = pd.read_csv(path + "campeonato-brasileiro-estatisticas-full.csv", sep=";")
 times = pd.read_csv(path + "campeonato-brasileiro-full.csv", sep=";")
 estados = pd.read_csv(path + "estados.csv", sep=';', encoding='latin-1') ; estados.columns = ['estado','uf','regiao']
 temporadas = pd.read_csv(path + "temporadas.csv", sep =';')
-
 
 ## Algumas funções necessárias ##
 
@@ -52,7 +47,6 @@ def agrup_c(df, col_group, col):
 # ordenando desc --> 1º linha
 def df_ordem(df, col, asc=False):
     return(df.sort_values(by=[col], ascending=asc))[:1]
-
 
 ## Ajustes nos datasets ##
 
@@ -147,17 +141,11 @@ for i in range(times.shape[0]):
 # Dando nomes aos datasets
 df.name = 'df'; times.name = 'times'; estados.name = 'estados'
 
-# verificando valores faltantes
-missing_map(df, 15, 5)
-missing_map(times, 15, 5, color="RdPu") 
-
-
 times_todos = np.unique(
     np.concatenate([times.mandante.unique(), 
                     times.visitante.unique()]))
 
 ufs = np.array(estados.uf)
-
 
 ## Acescentando uma coluna que representa a temporada que é de cada partida
 times['temporada'] = times.data.dt.year
@@ -165,12 +153,11 @@ for i in range(times.shape[0]):
     for j in range(temporadas.shape[0]):
         if (times.data.iloc[i] >= temporadas.data_inicio.iloc[j]) and (times.data.iloc[i] <= temporadas.data_fim[j]):
              times['temporada'].iloc[i] =  temporadas.temporada.iloc[j]
-
+                
 ## Ajustando os três jogos a mais de 2007 para 2008
 for i in [3010,3011,3012]:
     times.loc[times.id == i, "temporada"] =  'temporada_2008'
-
-
+    
 # Funcao com o resumo geral dos times
 
 def df_times(equipe = times_todos, temporada_escolhida=np.array(times.temporada.unique())):
@@ -198,14 +185,20 @@ def df_times(equipe = times_todos, temporada_escolhida=np.array(times.temporada.
     pontos['pontos'] = pontos.pontos_mandante + pontos.pontos_visitante
 
 
-    resumo_times = gols_marcados.merge(gols_levados, on='time', how='inner')                                .merge(vitorias_derrotas, on='time', how='inner')                                .merge(empates[['time','empates']], on='time', how='inner')                                .merge(pontos, on='time', how='inner')                                .rename(columns = {'mandante_placar_x':'marcou_como_mandante',
+    resumo_times = gols_marcados.merge(gols_levados, on='time', how='inner')\
+                                .merge(vitorias_derrotas, on='time', how='inner')\
+                                .merge(empates[['time','empates']], on='time', how='inner')\
+                                .merge(pontos, on='time', how='inner')\
+                                .rename(columns = {'mandante_placar_x':'marcou_como_mandante',
                                                    'visitante_placar_x':'marcou_como_visitante',
                                                    'mandante_placar_y':'levou_como_visitante',
                                                    'visitante_placar_y':'levou_como_mandante'})
     
     resumo_times['partidas_jogadas'] = resumo_times['vitorias'] + resumo_times['empates'] + resumo_times['derrotas']
     resumo_times['saldo_gols'] = resumo_times['gols_marcados'] - resumo_times['gols_levados']
-    resumo_times = resumo_times.sort_values(by=['pontos'], ascending = False)                               .rename(columns = {'time':'Clube', 'partidas_jogadas':'PJ','vitorias':'VIT','empates':'E','derrotas':'DER','gols_marcados':'GP','gols_levados':'GC','saldo_gols':'SG'})                               .set_index('Clube').reset_index()
+    resumo_times = resumo_times.sort_values(by=['pontos'], ascending = False)\
+                               .rename(columns = {'time':'Clube', 'partidas_jogadas':'PJ','vitorias':'VIT','empates':'E','derrotas':'DER','gols_marcados':'GP','gols_levados':'GC','saldo_gols':'SG'})\
+                               .set_index('Clube').reset_index()
     
     resumo_times = resumo_times[resumo_times.Clube.isin(equipe)]
     
@@ -213,40 +206,31 @@ def df_times(equipe = times_todos, temporada_escolhida=np.array(times.temporada.
 
 # funcao com o detalhamento do time ou da temporada
 def classificacao():
-    print(
-         "---*---*---*---*---*---*---*---*---*---*---*---*---*---*---\n                   "
-    "CAMPEONATO BRASILEIRO\n---*---*---*---*---*---*---*---*---*---*---*---*---*---*---\n")
-    resp_clube = input("P: Deseja ver algum clube específico?\n> R: ").lower()
-    if resp_clube in ("s","sim","y","yes"): 
-        clube = np.array([input("P: Qual clube?\n> R:").lower()])
-        print("\n>>> Classificação do {}\n".format(clube[0].title()))
-    else: 
-        clube = times_todos
-        print("\n>>>Classificação de todos os times:\n")
+    print("---*---*---*---*---*---*---*---*---*---*---*---*---*---*---\n                   "
+    "CLASSIFICAÇÃO DOS TIMES!\n---*---*---*---*---*---*---*---*---*---*---*---*---*---*---\n")
+    start_class = input(">>> Gostaria de ver a lista de classificação de alguma temporada ou os dados gerais do seu time?\n>R:").lower()
+    if start_class in ("n","nao","não","no"):
+        print("\nOk, não deseja ver a classificação!")
+    elif start_class in ("s","sim","y","yes"): 
+        resp_clube = input("\nP: Deseja ver algum clube específico?\n> R: ").lower()
+        if resp_clube in ("s","sim","y","yes"): 
+            clube = np.array([input("P: Qual clube?\n> R:").lower()])
+            print("\n>>> Classificação do {}\n".format(clube[0].title()))
+        else: 
+            clube = times_todos
+            print("\n>>>Classificação de todos os times:\n")
 
-    resp_temp = input("P: Alguma temporada específica?\n> R:").lower()
-    if resp_temp in ("s","sim","y","yes"): 
-        temp = np.array(['temporada_' + input("P: Qual temporada (ano)?\n> R:").lower()])
-    else: temp = np.array(times.temporada.unique())
+        resp_temp = input("P: Alguma temporada específica?\n> R:").lower()
+        if resp_temp in ("s","sim","y","yes"): 
+            temp = np.array(['temporada_' + input("P: Qual temporada (ano)?\n> R:").lower()])
+        else: temp = np.array(times.temporada.unique())
 
-    # classificacao + resumo
-    x = df_times(equipe=clube, temporada_escolhida=temp)[['Clube','PJ','VIT','E','DER','GP','GC','SG']]
-    x.Clube = x.Clube.str.title()
-    return(x)
-
-
-print(">> ESTATÍSTICAS GERAIS:\n\n"      "- Maior vencedor de jogos do Brasileirão: {} com {} vitórias!\n"      "- Pior vencedor de jogos do Brasileirão: {} com {} vitórias!\n"      "- Maior perdedor: {}, com {} derrotas\n"      "- Melhor ataque: {}, com {} gols marcados\n"      "- Pior defesa: {}, com {} gols levados\n"      .format(
-          df_ordem(df_times(), "VIT").Clube.iloc[0].title(), df_ordem(df_times(), "VIT").VIT.iloc[0],
-          df_ordem(df_times(), "VIT", asc=True).Clube.iloc[0].title(), df_ordem(df_times(), "VIT", asc=True).VIT.iloc[0],
-          df_ordem(df_times(), "DER").Clube.iloc[0].title(), df_ordem(df_times(), "DER").DER.iloc[0],
-          df_ordem(df_times(), "GP").Clube.iloc[0].title(), df_ordem(df_times(), "GP").GP.iloc[0],
-          df_ordem(df_times(), "GC").Clube.iloc[0].title(), df_ordem(df_times(), "GC").GC.iloc[0]
-))
-
-classificacao()
-
-# #### Criando uma função para ver as estatísticas
-
+        # classificacao + resumo
+        x = df_times(equipe=clube, temporada_escolhida=temp)[['Clube','PJ','VIT','E','DER','GP','GC','SG']]
+        x.Clube = x.Clube.str.title()
+        return(x)
+    else: print("Você não deu uma resposta válida!")
+    
 def stats_team(time_escolhido):
     print("\n\n>>>   Algumas estatísticas sobre o time {}   <<<\n\n"
         "- Número de vitórias do time nas temporadas: {}\n"\
@@ -266,31 +250,5 @@ def stats_team(time_escolhido):
                 round((100*df_times(equipe=time_escolhido).DER.iloc[0] / df_times(equipe=time_escolhido).PJ.iloc[0]), 2),
                 times[(times.mandante == time_escolhido[0]) | (times.visitante == time_escolhido[0])].temporada.unique(),
                 len(times.temporada.unique()), len(times[(times.mandante == time_escolhido[0]) | (times.visitante == time_escolhido[0])].temporada.unique()),
-                ((100*len(times[(times.mandante == time_escolhido[0]) | (times.visitante == time_escolhido[0])].temporada.unique()) / len(times.temporada.unique())),2)
+                round((100*len(times[(times.mandante == time_escolhido[0]) | (times.visitante == time_escolhido[0])].temporada.unique()) / len(times.temporada.unique())),2)
         ))
-
-
-# #### Looping do resultado
-
-# estatística sobre o time
-print(
-    "---*---*---*---*---*---*---*---*---*---*---*---*---*---*---\n                   "
-    "AVALIAÇÃO DO SEU TIME!\n---*---*---*---*---*---*---*---*---*---*---*---*---*---*---\n")
-time_escolhido = np.array([input("\nQual o time que deseja avaliar?\n>> Time: ").lower()])
-assert time_escolhido in times_todos, f"Coloque um dos times que ja participaram do Brasileirão\n {sorted(times_todos)}"
-print("\n............................................................")
-stats_team(time_escolhido)                                      
-
-# looping
-continuar = input("---*---*---*---*---*---*---*---*---*---*---*---*---*---*---\n\n"
-"Deseja ver outro time?\nResposta: ")
-assert continuar in ("s","sim","S","Sim","yes","Yes","y","Y"), "Sim ou não!"
-while continuar in ("s","sim","S","Sim","yes","Yes","y","Y"):
-    time_escolhido = np.array([input("\nQual o time que deseja avaliar?\n>> Time: ").lower()])
-    assert time_escolhido in times_todos, f"Coloque um dos times que já participaram do Brasileirão\n {sorted(times_todos)}"
-    print("\n---.---.---.---.---.---.---.---.---.---.---.---.---.---.---")
-    stats_team(time_escolhido)
-    continuar = input("---*---*---*---*---*---*---*---*---*---*---*---*---*---*---\n\n"
-    "Deseja ver outro time?\n\nResposta: ")
-    assert continuar in ("s","sim","S","Sim","yes","Yes","y","Y"), "Sim ou não!"
-
